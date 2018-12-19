@@ -67,8 +67,7 @@ new Promise((resolve, reject) => {
         let valueA = A[key];
         let valueB = B[key];
 
-        if (valueA != valueB && valueA && valueB && valueA != '--' && valueB != '--') {
-            // if (valueA != valueB) {
+        if (valueA && valueB && valueA != '--' && valueB != '--' && valueA != valueB && valueA != valueB[1] + valueB[0]) {
             // if (valueA && valueA != '--') valueA = '**';
             // if (valueB && valueB != '--') valueB = '**';
 
