@@ -10,14 +10,13 @@ if (!(fileA && fileB)) {
 }
 
 const readline = require('readline');
-const path = require('path');
 const fs = require('fs');
 
 let A = [];
 let B = [];
 
 let resultA = new Promise((resolve, reject) => {
-    let rlA = readline.createInterface({
+    const rlA = readline.createInterface({
         input: fs.createReadStream(fileA)
     });
     rlA.on('line', (line) => {
@@ -35,7 +34,7 @@ let resultA = new Promise((resolve, reject) => {
 })
 
 let resultB = new Promise((resolve, reject) => {
-    let rlB = readline.createInterface({
+    const rlB = readline.createInterface({
         input: fs.createReadStream(fileB)
     });
     rlB.on('line', (line) => {
@@ -55,6 +54,8 @@ let resultB = new Promise((resolve, reject) => {
 Promise.all([resultA, resultB]).then(() => {
     console.log("# 开始对比");
 
+    console.log("# rsid FileA FileB");
+
     let allKey = [];
     for (const key in A) {
         allKey[key] = true;
@@ -65,11 +66,16 @@ Promise.all([resultA, resultB]).then(() => {
 
     let diff = [];
     for (const key in allKey) {
-        const valueA = A[key];
-        const valueB = B[key];
+        let valueA = A[key];
+        let valueB = B[key];
 
         if (valueA != valueB && valueA && valueB && valueA != '--' && valueB != '--') {
-            diff[key] = [A[key], B[key]];
+        // if (valueA != valueB) {
+            // if (valueA && valueA != '--') valueA = '**';
+            // if (valueB && valueB != '--') valueB = '**';
+
+            diff[key] = [valueA, valueB];
+
             console.log(key, valueA, valueB);
         }
     }
