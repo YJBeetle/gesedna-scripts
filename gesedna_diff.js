@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --max-old-space-size=8192
 console.log('# gesedna diff')
 
 fileA = process.argv[2];
@@ -15,7 +15,7 @@ const fs = require('fs');
 let A = [];
 let B = [];
 
-let resultA = new Promise((resolve, reject) => {
+new Promise((resolve, reject) => {
     const rlA = readline.createInterface({
         input: fs.createReadStream(fileA)
     });
@@ -24,34 +24,32 @@ let resultA = new Promise((resolve, reject) => {
             let rsid = line.match("^rs\\d+");
             let genotype = line.match("..$");
             if (rsid && genotype)
-                A[rsid[0]] = genotype[0];
+                A[rsid[0].slice(2) | 0] = genotype[0];
         }
     });
     rlA.on('close', (line) => {
         console.log("# A读取完毕！");
         resolve();
     });
-})
-
-let resultB = new Promise((resolve, reject) => {
-    const rlB = readline.createInterface({
-        input: fs.createReadStream(fileB)
-    });
-    rlB.on('line', (line) => {
-        if (line[0] != '#') {
-            let rsid = line.match("^rs\\d+");
-            let genotype = line.match("..$");
-            if (rsid && genotype)
-                B[rsid[0]] = genotype[0];
-        }
-    });
-    rlB.on('close', (line) => {
-        console.log("# B读取完毕！");
-        resolve();
-    });
-})
-
-Promise.all([resultA, resultB]).then(() => {
+}).then(() => {
+    return new Promise((resolve, reject) => {
+        const rlB = readline.createInterface({
+            input: fs.createReadStream(fileB)
+        });
+        rlB.on('line', (line) => {
+            if (line[0] != '#') {
+                let rsid = line.match("^rs\\d+");
+                let genotype = line.match("..$");
+                if (rsid && genotype)
+                    B[rsid[0].slice(2) | 0] = genotype[0];
+            }
+        });
+        rlB.on('close', (line) => {
+            console.log("# B读取完毕！");
+            resolve();
+        });
+    })
+}).then(() => {
     console.log("# 开始对比");
 
     console.log("# rsid FileA FileB");
@@ -70,13 +68,13 @@ Promise.all([resultA, resultB]).then(() => {
         let valueB = B[key];
 
         if (valueA != valueB && valueA && valueB && valueA != '--' && valueB != '--') {
-        // if (valueA != valueB) {
+            // if (valueA != valueB) {
             // if (valueA && valueA != '--') valueA = '**';
             // if (valueB && valueB != '--') valueB = '**';
 
             diff[key] = [valueA, valueB];
 
-            console.log(key, valueA, valueB);
+            console.log('rs' + key, valueA, valueB);
         }
     }
 })
